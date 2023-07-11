@@ -1,4 +1,4 @@
-# Project_Data1
+# DataProject1
 
 We will take from the user a set of data and do some analyzes , discover the problem and find relationships between them that help us solve the problem.
 
