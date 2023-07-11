@@ -1,0 +1,113 @@
+### (1) Reading & preparing the dataset
+
+# csv data :
+#df <- read_csv("C:/Users/Admin/Desktop/Applications.xlsx")
+
+# xls data :
+#df<- read_excel("file.xls")
+
+# xlsx data:
+library(readxl)
+data <- read_excel("C:/Users/Dell G3/Downloads/Applications.xlsx")
+
+### Data Cleaning 
+
+#to remove duplicated data
+df <- unique(data)
+#to remove null values
+df <- na.omit(df)
+
+#to show if exist outliers
+boxplot(df)
+title("Applications")
+
+# define a function to remove outliers based on z-score
+remove_outliers <- function(df, threshold = 3) {
+  # calculate z-scores for each variable in the data frame
+  z_scores <- apply(df, 2, function(x) abs(scale(x)))
+  # identify rows with any z-score greater than the threshold
+  outlier_rows <- apply(z_scores, 1, function(x) any(x > threshold))
+  # return the data frame with outlier rows removed
+  df[!outlier_rows, ]
+}
+
+# remove outliers from the data frame based on z-score
+df <- remove_outliers(df)
+
+# view the cleaned data frame
+df
+
+### train & test
+train_index <- sample(nrow(df), round(0.7 * nrow(df)), replace = FALSE)
+train_data <- df[train_index, ]
+train_data
+test_data <- df[-train_index, ]
+test_data
+
+#for a matrix n = nrow of x
+n = nrow(x)
+
+#input data from user
+
+readUserData <- function() {
+  col_num_x=as.integer(readline(prompt="number of features is: ")) 
+  n=as.integer(readline(prompt="number values in any columns: "))  
+  df <- data.frame()
+  for (i in 1:col_num_x) {
+    xarr=c()
+    for(j in 1:n){
+      my.x <- as.integer(readline(prompt=paste("X",i," values:",sep="")))
+      xarr<-append(xarr,my.x)
+    }
+    xname <-paste("X",i,sep="")
+    if(ncol(df) == 0){
+      df= data.frame( X1= xarr)
+    }else{
+      df[xname] <- xarr
+    }
+  }
+  yarr=c()
+  for(i in 1:n){
+    my.y <- as.integer(readline(prompt="y values: "))
+    yarr<-append(yarr,my.y)
+  }
+  df["Y"] <- yarr
+  return(df)
+}
+df = readUserData()
+
+# Extract predictor (X) and response (Y) variables 
+# below ncol return the number of columns
+y <- as.matrix(df[, ncol(df)])
+y
+# df[, -ncol(df)] makes a data frame of all data except last column 
+# then as.matrix cast it to a matrix  
+x <- as.matrix(df[, -ncol(df)])
+# x now is matrix it's columns are the features of the model
+# now we need a column to represent the B0 (intercept,the constant)
+# so we make a column full of 1s with the length  
+onesarray <- rep(1, length(y))
+
+# Add the B0 (intercept) column to X
+x <- cbind(onesarray, x)
+x
+
+
+### (2) calculations
+
+# calculate beta coefficients using matrix algebra
+B <- solve(t(x) %*% x) %*% t(x) %*% y
+B
+#to calculate mean of y
+y_mean <- mean(y)
+y_hat <- x %*% B
+#sum of square error
+SSE <- sum((y - y_hat)^2)
+#sum of square total
+SST <- sum((y - y_mean)^2)
+#sum of square regression
+SSR = SST - SSE
+
+# calculate variance-covariance matrix
+sigma_sq <- SSE / (n - ncol(x))
+var_beta <- sigma_sq * solve(t(x) %*% x)
